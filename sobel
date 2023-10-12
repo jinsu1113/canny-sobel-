@@ -1,0 +1,56 @@
+function preload() {
+  img = loadImage(''); // 이미지 파일 경로를 지정하세요.
+}
+
+function setup() {
+  createCanvas(400, 400);
+  image(img, 0, 0, width, height);
+  sobelConvolution();
+}
+
+function sobelConvolution() {
+  loadPixels();
+
+  let sobelX = [
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]
+  ];
+
+  let sobelY = [
+    [-1, -2, -1],
+    [0, 0, 0],
+    [1, 2, 1]
+  ];
+
+  for (let x = 1; x < width - 1; x++) {
+    for (let y = 1; y < height - 1; y++) {
+      let sumX = 0;
+      let sumY = 0;
+
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          let xOffset = x + i;
+          let yOffset = y + j;
+          let index = (xOffset + yOffset * width) * 4;
+
+          let neighborBrightness = brightness(pixels[index]);
+          let weightX = sobelX[i + 1][j + 1];
+          let weightY = sobelY[i + 1][j + 1];
+          sumX += neighborBrightness * weightX;
+          sumY += neighborBrightness * weightY;
+        }
+      }
+
+      let edgeValue = sqrt(sumX * sumX + sumY * sumY);
+      edgeValue = map(edgeValue, 0, 255, 0, 255);
+
+      let pixelIndex = (x + y * width) * 4;
+      pixels[pixelIndex] = edgeValue;
+      pixels[pixelIndex + 1] = edgeValue;
+      pixels[pixelIndex + 2] = edgeValue;
+    }
+  }
+
+  updatePixels();
+}
